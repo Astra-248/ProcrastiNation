@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import LandingPage from './LandingPage.jsx'
 
 const confirmationMessages = [
   'Are you sure?',
@@ -90,7 +91,7 @@ const excuseStages = [
   },
 ]
 
-function App() {
+function TaskApp() {
   const [tasks, setTasks] = useState([])
   const [input, setInput] = useState('')
   const [confirmStep, setConfirmStep] = useState(null)
@@ -422,6 +423,16 @@ function App() {
       )}
     </>
   )
+}
+
+function App() {
+  const [showLanding, setShowLanding] = useState(true)
+
+  if (showLanding) {
+    return <LandingPage onStart={() => setShowLanding(false)} />
+  }
+
+  return <TaskApp />
 }
 
 export default App
