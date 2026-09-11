@@ -1,154 +1,296 @@
+import { useState } from 'react'
 import './App.css'
 
+const confirmationMessages = [
+  'Are you sure?',
+  'Are you REALLY sure?',
+  'Do you have evidence that you deserve this?',
+  'Your mom would be disappointed.',
+  'Your task has requested legal representation.',
+  'This has been reported to the UN.',
+  'Are you absolutely certain you want to become productive?',
+  'Interesting. You think you can just finish things now?',
+  'We consulted three economists. They advised against it.',
+  'Your ancestors are watching.',
+  'This decision cannot be emotionally undone.',
+  'Have you considered simply not doing it?',
+  'The productivity department has denied your request.',
+  'We are contacting your academic advisor.',
+  'Fine. But we’re watching you.',
+  'ERROR: Excessive productivity detected.',
+  'You have made a terrible mistake.',
+  'Why are you still trying?',
+  'This is getting embarrassing for both of us.',
+  'Please reconsider your entire life.',
+]
+
+const buttonMessages = [
+  'Yes, unfortunately',
+  'I am sure',
+  'Keep going',
+  'Still yes',
+  'I regret nothing',
+  'Proceed, I guess',
+  'Do it anyway',
+  'I insist',
+  'Continue making this worse',
+  'Yes. Again.',
+]
+
 function App() {
+  const [tasks, setTasks] = useState([])
+  const [input, setInput] = useState('')
+  const [confirmStep, setConfirmStep] = useState(null)
+  const [shakeKey, setShakeKey] = useState(0)
+
+  function addTask(event) {
+    event.preventDefault()
+
+    const trimmed = input.trim()
+
+    if (!trimmed) {
+      return
+    }
+
+    const newTask = {
+      id: Date.now(),
+      text: trimmed,
+      createdAt: Date.now(),
+      completed: false,
+    }
+
+    setTasks((currentTasks) => [newTask, ...currentTasks])
+    setInput('')
+  }
+
+  function startCompletion(taskId) {
+    setConfirmStep({
+      taskId,
+      step: 0,
+    })
+
+    setShakeKey((current) => current + 1)
+  }
+
+  function handleConfirmation() {
+    if (!confirmStep) {
+      return
+    }
+
+    setConfirmStep((current) => ({
+      ...current,
+      step: current.step + 1,
+    }))
+
+    setShakeKey((current) => current + 1)
+  }
+
+  function cancelConfirmation() {
+    setConfirmStep(null)
+  }
+
+  const activeTasks = tasks.filter((task) => !task.completed)
+  const completedTasks = tasks.filter((task) => task.completed)
+
+  const currentMessage =
+    confirmStep &&
+    confirmationMessages[confirmStep.step % confirmationMessages.length]
+
+  const currentButton =
+    confirmStep &&
+    buttonMessages[confirmStep.step % buttonMessages.length]
+
   return (
     <>
       <header className="app-header">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">&#9781;</span>
+          <span className="brand-mark" aria-hidden="true">
+            ☹
+          </span>
+
           <span className="brand-text">ProcrastiNation</span>
         </div>
-        <div className="tagline">the to-do app that genuinely does not care</div>
+
+        <div className="tagline">
+          the to-do app that genuinely does not care
+        </div>
       </header>
 
-      <main className="landing">
-        <section className="hero-block">
-          <h1 className="hero-title">
-            Your tasks,
+      <main className="app-shell">
+        <section className="app-intro">
+          <p className="eyebrow">PRODUCTIVITY, BUT WORSE</p>
+
+          <h1 className="app-title">
+            Things you should do,
             <br />
-            my thoughts on them
+            eventually.
           </h1>
-          <p className="hero-sub">
-            ProcrastiNation is a to-do list that actively works against you.
-            Tasks rot on the page. Finishing one is a minor betrayal.
-            The guilt meter is not a metaphor.
-          </p>
-          <div className="hero-cta">
-            <button
-              type="button"
-              className="cta-primary"
-              onClick={() => {
-                const audio = new Audio('/taunt.mp3')
-                audio.play().catch(() => {})
-              }}
-            >
-              Start sabotaging
-            </button>
-            <button
-              type="button"
-              className="cta-secondary"
-              onClick={() => {
-                const audio = new Audio('/sigh.mp3')
-                audio.play().catch(() => {})
-              }}
-            >
-              I'll do it later
-            </button>
-          </div>
-          <p className="hero-fineprint">
-            Neither button actually starts anything. Choosing is the product.
+
+          <p className="app-description">
+            Add a task. Ignore it. Watch it slowly become a problem.
           </p>
         </section>
 
-        <section className="problem-block">
-          <h2 className="section-heading">The problem, as we invented it</h2>
-          <div className="three-col">
-            <div className="card card-rot">
-              <div className="card-icon" aria-hidden="true">&#127807;</div>
-              <h3>Rotting lists</h3>
-              <p>
-                Your tasks visually decay the longer you ignore them.
-                Not as a cute color shift. As mold. As text that gives up.
-                As timestamps that stop telling the time and start telling
-                the story of your decline.
-              </p>
-              <span className="card-tag">decay engine</span>
-            </div>
-            <div className="card card-wall">
-              <div className="card-icon" aria-hidden="true">&#9888;</div>
-              <h3>The wall of petty questions</h3>
-              <p>
-                Mark a task done and the app will ask you if you are sure.
-                Then it will ask again. Then it will mention your mother.
-                Then it will imply the United Nations has been notified.
-                Eventually it will let you through, but badly.
-              </p>
-              <span className="card-tag">confirmation theater</span>
-            </div>
-            <div className="card card-excuse">
-              <div className="card-icon" aria-hidden="true">&#128221;</div>
-              <h3>The excuse generator that turns on you</h3>
-              <p>
-                Overdue task? Ask for an excuse instead of deleting it.
-                The first one is mild. The next one is a jewel-heist
-                confession. Sometimes it offers to email your professor.
-                Sometimes it drafts a 400-word affidavit no one asked for.
-              </p>
-              <span className="card-tag">escalating absurdity</span>
-            </div>
-          </div>
-        </section>
+        <section className="task-panel">
+          <form className="task-form" onSubmit={addTask}>
+            <input
+              type="text"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Something you’ll definitely do later..."
+              aria-label="New task"
+            />
 
-        <section className="guilt-block">
-          <div className="guilt-card">
-            <div className="guilt-visual">
-              <div className="guilt-face" aria-hidden="true">&#128532;</div>
-              <div className="guilt-score">
-                <span className="guilt-number">472</span>
-                <span className="guilt-label">productivity shame score</span>
-                <span className="guilt-sub">down only. always.</span>
+            <button type="submit">
+              Add task
+            </button>
+          </form>
+
+          <div className="task-header">
+            <div>
+              <span className="task-count">{activeTasks.length}</span>
+
+              <span className="task-count-label">
+                {activeTasks.length === 1
+                  ? 'task waiting'
+                  : 'tasks waiting'}
+              </span>
+            </div>
+
+            <span className="task-warning">
+              They are judging you.
+            </span>
+          </div>
+
+          <div className="task-list">
+            {activeTasks.length === 0 && completedTasks.length === 0 && (
+              <div className="empty-state">
+                <div className="empty-face" aria-hidden="true">
+                  😐
+                </div>
+
+                <p>No tasks yet.</p>
+
+                <span>
+                  This is currently your most productive moment.
+                </span>
               </div>
-            </div>
-            <p className="guilt-copy">
-              A dashboard that trends downward the more you try to use it.
-              Accomplish something and it drops. Open the app and it drops.
-              Exist, really, and it probably drops.
-            </p>
-            <button
-              type="button"
-              className="guilt-peek"
-              onClick={() => {
-                const audio = new Audio('/violin-crash.mp3')
-                audio.play().catch(() => {})
-              }}
-            >
-              Peek at your shame
-            </button>
+            )}
+
+            {activeTasks.map((task) => (
+              <article className="task-item" key={task.id}>
+                <div className="task-copy">
+                  <span className="task-bullet" aria-hidden="true">
+                    ○
+                  </span>
+
+                  <span className="task-text">
+                    {task.text}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="complete-button"
+                  onClick={() => startCompletion(task.id)}
+                >
+                  Done
+                </button>
+              </article>
+            ))}
+
+            {completedTasks.length > 0 && (
+              <div className="completed-section">
+                <div className="completed-heading">
+                  Completed against your better judgment
+                </div>
+
+                {completedTasks.map((task) => (
+                  <article
+                    className="task-item task-item-completed"
+                    key={task.id}
+                  >
+                    <div className="task-copy">
+                      <span className="task-bullet" aria-hidden="true">
+                        ✓
+                      </span>
+
+                      <span className="task-text">
+                        {task.text}
+                      </span>
+                    </div>
+
+                    <span className="completed-label">
+                      regrettably done
+                    </span>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
-        <section className="demo-block">
-          <h2 className="section-heading">A demo that wastes your time on purpose</h2>
-          <p className="demo-copy">
-            We built this for an 18-hour hackathon with a zero budget and a
-            competitive commitment to getting nothing done. The app is soft-
-            ware only. The only integration is an AI excuse generator that
-            may or may not threaten to contact your academic advisor.
-          </p>
-          <div className="demo-reasons">
-            <div className="reason"><span>free tier only</span></div>
-            <div className="reason"><span>no business model</span></div>
-            <div className="reason"><span>no roadmap</span></div>
-            <div className="reason"><span>no future</span></div>
-          </div>
+        <section className="useless-note">
+          <span aria-hidden="true">⚠</span>
+          Completing tasks is currently considered suspicious behavior.
         </section>
       </main>
 
-      <footer className="app-footer">
-        <div className="footer-inner">
-          <div className="footer-brand">
-            <span className="brand-mark" aria-hidden="true">&#9781;</span>
-            <span className="brand-text">ProcrastiNation</span>
-          </div>
-          <div className="footer-meta">
-            <span>made with no budget</span>
-            <span className="dot" aria-hidden="true">&bull;</span>
-            <span>zero features you wanted</span>
-            <span className="dot" aria-hidden="true">&bull;</span>
-            <span>probably broken by design</span>
+      {confirmStep && (
+        <div className="modal-backdrop">
+          <div
+            key={shakeKey}
+            className="confirmation-modal shake"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-title"
+          >
+            <div className="modal-stamp">
+              PRODUCTIVITY DETECTED
+            </div>
+
+            <div className="modal-attempt">
+              ATTEMPT #{confirmStep.step + 1}
+            </div>
+
+            <h2 id="confirmation-title">
+              {currentMessage}
+            </h2>
+
+            <p>
+              You are attempting to finish something.
+              <br />
+              This behavior is becoming concerning.
+            </p>
+
+            <div className="modal-progress">
+              There is no final confirmation.
+            </div>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-cancel"
+                onClick={cancelConfirmation}
+              >
+                Fine. I’ll procrastinate.
+              </button>
+
+              <button
+                type="button"
+                className="modal-confirm"
+                onClick={handleConfirmation}
+              >
+                {currentButton}
+              </button>
+            </div>
+
+            <div className="modal-footnote">
+              Hint: this never ends.
+            </div>
           </div>
         </div>
-      </footer>
+      )}
     </>
   )
 }
