@@ -37,11 +37,65 @@ const buttonMessages = [
   'Yes. Again.',
 ]
 
+const excuseStages = [
+  {
+    level: 'EXCUSE #1',
+    text: (task) =>
+      `I was going to do "${task}", but I needed to mentally prepare myself for possibly starting it.`,
+  },
+  {
+    level: 'EXCUSE #2',
+    text: (task) =>
+      `I could have done "${task}", but I spent so long preparing to do it that I became too tired to actually do it.`,
+  },
+  {
+    level: 'EXCUSE #3',
+    text: (task) =>
+      `I tried to start "${task}", stared at it for 14 seconds, and decided that was enough personal growth for one day.`,
+  },
+  {
+    level: 'EXCUSE #4',
+    text: (task) =>
+      `I was fully prepared to do "${task}", but unfortunately I experienced a sudden and completely unavoidable loss of confidence in my own abilities.`,
+  },
+  {
+    level: 'EXCUSE #5',
+    text: (task) =>
+      `I didn't finish "${task}" because I became emotionally attached to the idea of finishing it tomorrow.`,
+  },
+  {
+    level: 'EXCUSE #6',
+    text: (task) =>
+      `I had every intention of doing "${task}", but then I remembered that procrastinating is technically something I am extremely experienced at.`,
+  },
+  {
+    level: 'EXCUSE #7',
+    text: (task) =>
+      `I could not complete "${task}" because I spent the entire day avoiding it, then spent the evening feeling guilty about avoiding it, and finally decided feeling guilty counted as progress.`,
+  },
+  {
+    level: 'EXCUSE #8',
+    text: (task) =>
+      `I was supposed to do "${task}", but instead I accomplished absolutely nothing and somehow still managed to feel exhausted.`,
+  },
+  {
+    level: 'EXCUSE #9',
+    text: (task) =>
+      `I didn't do "${task}" because every time I looked at it, I remembered all the other things I haven't done, and then I needed a break from thinking about those things.`,
+  },
+  {
+    level: 'EXCUSE #10',
+    text: (task) =>
+      `I have no legitimate excuse for not doing "${task}". I simply chose not to do it, then invented several excuses so I wouldn't have to admit that.`,
+  },
+]
+
 function App() {
   const [tasks, setTasks] = useState([])
   const [input, setInput] = useState('')
   const [confirmStep, setConfirmStep] = useState(null)
   const [shakeKey, setShakeKey] = useState(0)
+  const [excuses, setExcuses] = useState({})
 
   function addTask(event) {
     event.preventDefault()
@@ -61,6 +115,19 @@ function App() {
 
     setTasks((currentTasks) => [newTask, ...currentTasks])
     setInput('')
+  }
+
+  function makeExcuseWorse(task) {
+    setExcuses((current) => {
+      const previous = current[task.id]?.attempt ?? 0
+
+      return {
+        ...current,
+        [task.id]: {
+          attempt: previous + 1,
+        },
+      }
+    })
   }
 
   function startCompletion(taskId) {
@@ -177,27 +244,89 @@ function App() {
               </div>
             )}
 
-            {activeTasks.map((task) => (
-              <article className="task-item" key={task.id}>
-                <div className="task-copy">
-                  <span className="task-bullet" aria-hidden="true">
-                    ○
-                  </span>
+            {activeTasks.map((task) => {
+              const excuseData = excuses[task.id]
+              const attempt = excuseData?.attempt ?? 0
 
-                  <span className="task-text">
-                    {task.text}
-                  </span>
-                </div>
+              const stage =
+                attempt > 0
+                  ? excuseStages[
+                      Math.min(attempt - 1, excuseStages.length - 1)
+                    ]
+                  : null
 
-                <button
-                  type="button"
-                  className="complete-button"
-                  onClick={() => startCompletion(task.id)}
-                >
-                  Done
-                </button>
-              </article>
-            ))}
+              return (
+                <article className="task-item" key={task.id}>
+                  <div className="task-copy">
+                    <span className="task-bullet" aria-hidden="true">
+                      ○
+                    </span>
+
+                    <span className="task-text">
+                      {task.text}
+                    </span>
+                  </div>
+
+                  <div className="task-actions">
+                    <button
+                      type="button"
+                      className={`excuse-button ${
+                        attempt > 0 ? 'excuse-button-active' : ''
+                      }`}
+                      onClick={() => makeExcuseWorse(task)}
+                    >
+                      <span className="excuse-button-icon">
+                        ✦
+                      </span>
+
+                      <span>
+                        {attempt === 0
+                          ? 'Make Excuse'
+                          : 'Make Excuse Better'}
+                      </span>
+
+                      {attempt > 0 && (
+                        <span className="excuse-button-arrow">
+                          →
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="complete-button"
+                      onClick={() => startCompletion(task.id)}
+                    >
+                      Done
+                    </button>
+                  </div>
+
+                  {stage && (
+                    <div className="excuse-box">
+                      <div className="excuse-top">
+                        <span className="excuse-label">
+                          {stage.level}
+                        </span>
+
+                        <span className="excuse-level">
+                          SHAME LEVEL {Math.min(attempt, 10)}
+                        </span>
+                      </div>
+
+                      <p>{stage.text(task.text)}</p>
+
+                      {attempt >= 10 && (
+                        <div className="excuse-verdict">
+                          <span>VERDICT</span>
+                          Your excuse has officially become worse than the
+                          task.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </article>
+              )
+            })}
 
             {completedTasks.length > 0 && (
               <div className="completed-section">
