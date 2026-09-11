@@ -297,7 +297,7 @@ function App() {
                       className="complete-button"
                       onClick={() => startCompletion(task.id)}
                     >
-                      Done
+                      Mark as Done
                     </button>
                   </div>
 
