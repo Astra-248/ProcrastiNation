@@ -1,0 +1,65 @@
+/* App.css — ProcrastiNation landing page components */
+
+/* A few small, deliberately useless touch-ups that only the landing
+   page references. Nothing here makes the app helpful. */
+
+@layer components {
+  .cta-primary,
+  .cta-secondary,
+  .guilt-peek {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cta-primary:active,
+  .cta-secondary:active,
+  .guilt-peek:active {
+    transform: translateY(0);
+  }
+
+  .reason {
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .reason:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--mustard-deep);
+  }
+
+  .footer-inner {
+    transition: opacity 0.2s ease;
+  }
+
+  .footer-inner a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+/* Tiny "I'll do it later" nudge — purely cosmetic, no behavior. */
+@keyframes soft-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-block,
+.guilt-block,
+.demo-block,
+.problem-block {
+  animation: soft-fade-in 0.55s ease both;
+}
+
+.guilt-block {
+  animation-delay: 0.12s;
+}
+
+.demo-block {
+  animation-delay: 0.22s;
+}
